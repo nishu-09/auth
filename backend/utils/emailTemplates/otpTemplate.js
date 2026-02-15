@@ -1,10 +1,17 @@
-const otpTemplate = ({ otp, appName = "Your App Name" }) => {
+const otpTemplate = ({
+  otp,
+  name ='Unknown',
+  appName = "Your App Name",
+  title = "Email Verification",
+  heading = "Email Verification",
+  message = "Please use the OTP below to proceed."
+}) => {
   return `
   <!DOCTYPE html>
   <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Email Verification</title>
+    <title>${title}</title>
   </head>
   <body style="margin:0;padding:0;background-color:#f4f6f8;font-family:Arial,Helvetica,sans-serif;">
     
@@ -19,8 +26,9 @@ const otpTemplate = ({ otp, appName = "Your App Name" }) => {
 
       <tr>
         <td style="padding:30px;color:#333333;">
-          <h3>Email Verification</h3>
-          <p>Please use the OTP below to verify your email address.</p>
+          <p>Dear ${name}!</p>
+          <h3>${heading}</h3>
+          <p>${message}</p>
 
           <div style="text-align:center;margin:30px 0;">
             <span style="display:inline-block;padding:15px 30px;font-size:26px;
