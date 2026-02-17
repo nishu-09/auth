@@ -33,4 +33,7 @@ router.post("/logout", AuthController.logout);
 // Profile
 router.get("/profile",AuthMiddleware,AuthController.profile);
 
+//Google login
+router.post("/google-login", AuthController.googleLogin);
+
 module.exports = router

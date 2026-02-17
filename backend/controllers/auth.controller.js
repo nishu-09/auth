@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 const Otp = require("../models/otp");
 const sendEmail = require("../utils/send_email");
 const { generateAccessToken, generateRefreshToken } = require("../utils/generate_token")
+const { OAuth2Client } = require("google-auth-library");
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const UserController = {
 
@@ -172,7 +174,7 @@ const UserController = {
                 template: "otp",
                 data: {
                     otp,
-                    name : user.name,
+                    name: user.name,
                     appName: "MyAuthApp",
                     title: "Verify Your Email",
                     heading: "Email Verification",
@@ -279,7 +281,7 @@ const UserController = {
                 template: "otp",
                 data: {
                     otp,
-                    name:user.name,
+                    name: user.name,
                     appName: "MyAuthApp",
                     title: "Password Reset",
                     heading: "Reset Your Password",
@@ -463,6 +465,87 @@ const UserController = {
 
         } catch (error) {
             return res.status(500).json({ success: false, message: error.message });
+        }
+    },
+
+    // ================= GOOGLE Login =================
+    googleLogin: async (req, res) => {
+        try {
+            const { credential } = req.body;
+
+            if (!credential) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Google token missing"
+                });
+            }
+
+            //  Verify Google ID token
+            const ticket = await client.verifyIdToken({
+                idToken: credential,
+                audience: process.env.GOOGLE_CLIENT_ID,
+            });
+
+            const payload = ticket.getPayload();
+            const { sub, email, name, picture } = payload;
+
+            let user = await User.findOne({ email });
+
+            //  If user does not exist → create
+            if (!user) {
+                user = new User({
+                    name,
+                    email,
+                    googleId: sub,
+                    provider: "google",
+                    avatar: picture,
+                    is_verified: true   // Google already verifies email
+                });
+
+                await user.save();
+            }
+
+            //  If user exists but registered locally → link Google
+            if (user && !user.googleId) {
+                user.googleId = sub;
+                user.provider = "google";
+                user.is_verified = true;
+                await user.save();
+            }
+
+            //  Generate tokens (same as your login)
+            const refreshToken = generateRefreshToken(user);
+            const accessToken = generateAccessToken(user);
+
+            user.refresh_token = refreshToken;
+            await user.save();
+
+            //  Set cookies (same as your login)
+            res.cookie("accessToken", accessToken, {
+                httpOnly: true,
+                secure: false,
+                sameSite: "Lax",
+                maxAge: 15 * 60 * 1000,
+            });
+
+            res.cookie("refreshToken", refreshToken, {
+                httpOnly: true,
+                secure: false,
+                sameSite: "Lax",
+                maxAge: 7 * 24 * 60 * 60 * 1000,
+            });
+
+            return res.json({
+                success: true,
+                message: "Google login successful"
+            });
+
+        } catch (error) {
+            console.log("GOOGLE LOGIN ERROR:", error);
+            return res.status(401).json({
+                success: false,
+                message: "Invalid Google token"
+            });
         }
     }
 

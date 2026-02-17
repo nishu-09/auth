@@ -12,21 +12,30 @@ const userSchema = new mongoose.Schema({
         trim: true,
         required: true
     },
-    // mobile: {
-    //     type: String,
-    //     required: true,
-    // },
+    googleId: {
+        type: String,
+        default: null
+    },
+    provider: {
+        type: String,
+        enum: ['local', 'google'],
+        default: 'local'
+    },
+    password: {
+        type: String,
+        required: function () {
+            return this.provider === 'local';
+        }
+    },
     is_verified: {
         type: Boolean,
         default: false
     },
-    password: {
-        type: String,
-        require: true
-    },
     refresh_token: {
         type: String,
+        default:null
     }
-}, { timeStamps: true })
+
+}, { timestamps: true })
 
 module.exports = mongoose.model('User', userSchema)
