@@ -1,0 +1,30 @@
+<div class="register-container">
+  <h2>Register</h2>
+
+  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+
+    <div>
+      <label>Name</label>
+      <input type="text" formControlName="name" />
+    </div>
+
+    <div>
+      <label>Email</label>
+      <input type="email" formControlName="email" />
+    </div>
+
+    <div>
+      <label>Password</label>
+      <input type="password" formControlName="password" />
+    </div>
+
+    <button type="submit" [disabled]="loading">
+      {{ loading ? 'Registering...' : 'Register' }}
+    </button>
+
+  </form>
+
+  <p *ngIf="message" style="color: green;">{{ message }}</p>
+  <p *ngIf="error" style="color: red;">{{ error }}</p>
+
+</div>

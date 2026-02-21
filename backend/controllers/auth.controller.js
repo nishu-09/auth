@@ -237,7 +237,7 @@ const UserController = {
                 maxAge: 7 * 24 * 60 * 60 * 1000,
             });
 
-            return res.json({ message: "Login successful" });
+            return res.json({ status: true, message: "Login successful" });
 
         } catch (error) {
             res.status(500).json({
@@ -405,19 +405,20 @@ const UserController = {
                         return res.status(403).json({ message: "Invalid refresh token" });
 
                     // Rotate tokens
-                    const tokens = generateRefreshToken(user);
+                    const refreshToken = generateRefreshToken(user);
+                    const accessToken = generateAccessToken(user)
+                    user.refresh_token = refreshToken;
 
-                    user.refresh_token = tokens.refreshToken;
                     await user.save();
 
-                    res.cookie("accessToken", tokens.accessToken, {
+                    res.cookie("accessToken", accessToken, {
                         httpOnly: true,
                         secure: false,
                         sameSite: "Lax",
                         maxAge: 15 * 60 * 1000,
                     });
 
-                    res.cookie("refreshToken", tokens.refreshToken, {
+                    res.cookie("refreshToken", refreshToken, {
                         httpOnly: true,
                         secure: false,
                         sameSite: "Lax",

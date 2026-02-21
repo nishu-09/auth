@@ -16,13 +16,6 @@ export class App {
   constructor(private api: Auth) {}
 
   ngOnInit() {
-    this.api.testConnection().subscribe({
-      next: (res: any) => {
-        this.title.set = res.message;
-      },
-      error: (err) => {
-        console.error(err);
-      }
-    });
+   
   }
 }

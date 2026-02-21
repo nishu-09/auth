@@ -1,5 +1,6 @@
 require('dotenv').config()
 const express = require('express')
+const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const connectDB = require('./config/db')
 
@@ -11,18 +12,19 @@ const app = express()
 // Connect DB
 connectDB();
 
-const cookieParser = require('cookie-parser');
+// CORS first
+app.use(cors({
+  origin: 'http://localhost:4200',
+  credentials: true
+}));
 app.use(cookieParser());
-app.use(cors());
-app.use(express.json());
-
-
-app.get("/api/test", (req, res) => {
-//   res.set('Cache-Control', 'no-store');
-  res.status(200).json({
-    message: "Backend connected successfully 🚀"
-  });
+// prevent browser caching
+app.use((req, res, next) => {
+  res.set("Cache-Control", "no-store");
+  next();
 });
+
+app.use(express.json());
 
 app.use('/api/auth', AuthRouter)
 

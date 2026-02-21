@@ -3,7 +3,6 @@ const jwt = require('jsonwebtoken')
 const AuthMiddleware = async (req, res, next) => {
     try {
         const token = req.cookies.accessToken;
-
         if (!token) {
             return res.status(401).json({
                 message: "Not authorized, no token"
